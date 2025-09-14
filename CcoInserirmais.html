@@ -1,0 +1,1879 @@
+u<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador Linha 5 Lilás</title>
+  
+  <style>
+  .x-falha {
+  color: #fff !important;
+  background: #f44336 !important;
+  animation: piscar 0.8s infinite alternate;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+  .trem-falha-label {
+  color: #f44336 !important;
+  animation: piscar 0.8s infinite alternate;
+}
+
+@keyframes piscar {
+      from { opacity: 1; }
+      to { opacity: 0.7; }
+    }
+
+    /* Container para as colunas de status */
+    .status-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-around;
+    }
+
+    .status-col {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    /* Trem com falha: piscar */
+    .trem-falha {
+      animation: piscar 0.5s infinite alternate;
+    }
+    
+    .btn-inserir-trem {
+      background: #00bfa5;
+      color: white;
+    }
+    
+    body {
+      font-family: Arial;
+      background: #eef;
+      text-align: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    
+    .linha-container {
+      width: 100vw;
+      overflow-x: auto;
+      padding: 20px 0;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .linha {
+      display: flex;
+      min-width: 1100px;
+      justify-content: center;
+      margin: 0 auto;
+      gap: 8px;
+    }
+    
+    .estacao {
+      width: 70px;
+      height: 70px;
+      border-radius: 10px;
+      background: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin: 0 1px;
+      position: relative;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.2;
+      padding: 5px;
+      box-sizing: border-box;
+      transition: box-shadow .2s;
+    }
+    
+    .ativa-trem1 { background: #4caf50; color: #fff; }
+    .ativa-trem2 { background: #2196F3; color: #fff; }
+    .ativa-trem3 { background: #FFB300; color: #fff; }
+    .ativa-trem4 { background: #8BC34A; color: #fff; }
+    .ativa-trem5 { background: #E040FB; color: #fff; }
+
+    /* Novas cores para os trens 6,7,8,9,10,16,17,18,19,20 */
+    .ativa-trem-vermelha { background-color: #4CAF50; color: white; }
+    .ativa-trem-preta { background-color: #212121; color: white; }
+    .ativa-trem-cinza { background-color: #9E9E9E; color: white; }
+    .ativa-trem-marrom { background-color: #795548; color: white; }
+    .ativa-trem-roxa { background-color: #673AB7; color: white; }
+    .ativa-trem-azulclaro { background-color: #03A9F4; color: white; }
+    .ativa-trem-verdeescuro { background-color: #388E3C; color: white; }
+    .ativa-trem-laranja { background-color: #FF9800; color: white; }
+    .ativa-trem-rosa { background-color: #E91E63; color: white; }
+    .ativa-trem-amareloescuro { background-color: #FFC107; color: #212121; } /* Texto escuro para contraste */
+
+    .falha {
+      background: #f44336 !important;
+      color: #fff;
+      animation: piscar 0.5s infinite alternate;
+    }
+
+    /* Estilo para a estação superlotada */
+    .super-lotada {
+      background: #f44336 !important;
+      color: #fff !important;
+      animation: piscar 0.8s infinite alternate;
+    }
+
+    /* Estilo para o aviso "IN" */
+    .in-alert {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 1px 2px #000;
+      animation: piscar 0.8s infinite alternate;
+    }
+
+    /*
+    @keyframes piscar {
+      from { opacity: 1; }
+      to { opacity: 0.7; }
+    }
+    */
+    
+    .trem-parado-msg {
+      position: absolute;
+      top: +75px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #222c;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 7px;
+      white-space: nowrap;
+      z-index: 5;
+      pointer-events: none;
+      font-weight: bold;
+      text-shadow: 0 1px 2px #0006;
+    }
+
+    .passageiros-info {
+        position: absolute;
+        bottom: 5px;
+        font-size: 10px;
+        color: #fff;
+        text-shadow: 0 1px 2px #0006;
+    }
+    
+    .status {
+      margin: 15px auto;
+      font-size: 18px;
+      font-weight: bold;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .tempo {
+      margin-top: 10px;
+      font-style: italic;
+      color: #666;
+    }
+    
+    .controls {
+      margin: 20px auto;
+      max-width: 1000px;
+      padding: 15px;
+      background: #ddd;
+      border-radius: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      min-width: 120px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    
+    .btn-iniciar {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .btn-parar {
+      background: #FF9800;
+      color: white;
+    }
+    
+    .btn-normalizar {
+      background: #9C2710;
+      color: white;
+    }
+    
+    .btn-falha {
+      background: #F44336;
+      color: white;
+    }
+    
+    .btn-download {
+      background: #607d8b;
+      color: white;
+    }
+    
+    .btn-reset-historico {
+      background: #c62828;
+      color: white;
+    }
+    
+    .btn-recolher {
+      background: #795548;
+      color: white;
+    }
+    
+    select {
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    
+    .trem-info {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    
+    .trem-marker {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+    
+    .trem1-marker { background: #4caf50; }
+    .trem2-marker { background: #2196F3; }
+    .trem3-marker { background: #FFB300; }
+    .trem4-marker { background: #8BC34A; }
+    .trem5-marker { background: #E040FB; }
+    
+    .falha-info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #f44336;
+      font-weight: bold;
+    }
+    
+    .historico-container {
+      margin: 35px auto 0 auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px #0001;
+      padding: 20px;
+      max-width: 1100px;
+      overflow-x: auto;
+    }
+    
+    .historico-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    #historico-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    
+    #historico-table th, #historico-table td {
+      border: 1px solid #bbb;
+      padding: 5px 8px;
+      font-size: 13px;
+      text-align: center;
+    }
+    
+    #historico-table th {
+      background: #e0e0e0;
+    }
+    
+    #historico-table tr:nth-child(even) {
+      background: #f4f4f4;
+    }
+    
+    .historico-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    
+    .via-label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    
+    @media (max-width: 1200px) {
+      .linha { min-width: 900px; }
+      .estacao { width: 60px; height: 60px; font-size: 10px; }
+    }
+    
+    @media (max-width: 900px) {
+      .linha { min-width: 600px; }
+      .estacao { width: 45px; height: 45px; font-size: 9px; }
+    }
+    
+    @media (max-width: 700px) {
+      .linha-container { padding: 10px 0; }
+      .linha { min-width: 400px; }
+      .estacao { width: 38px; height: 38px; font-size: 8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simulador Linha 5 Lilás</h1>
+    <div class="via-label">Via 1 - Capão Redondo ⬅ Chácara Klabin</div>
+    <div class="linha-container">
+      <div class="linha" id="linha-estacoes">
+        <div class="estacao" id="est18">____</div>
+        <div class="estacao" id="est1">Capão<br>Redondo<br>1</div>
+        <div class="estacao" id="est2">Campo<br>Limpo</div>
+        <div class="estacao" id="est3">Vila das<br>Belezas</div>
+        <div class="estacao" id="est4">Giovanni<br>Gronchi</div>
+        <div class="estacao" id="est5">Santo<br>Amaro<br>🔁 9</div>
+        <div class="estacao" id="est6">Largo<br>Treze</div>
+        <div class="estacao" id="est7">Adolfo<br>Pinheiro</div>
+        <div class="estacao" id="est8">Alto da<br>Boa Vista<br>⬇</div>
+        <div class="estacao" id="est9">Borba<br>Gato<br>⬇</div>
+        <div class="estacao" id="est10">Brooklin<br>⬇</div>
+        <div class="estacao" id="est11">Campo<br>Belo<br>⬇</div>
+        <div class="estacao" id="est12">Eucaliptos</div>
+        <div class="estacao" id="est13">Moema</div>
+        <div class="estacao" id="est14">AACD<br>Servidor</div>
+        <div class="estacao" id="est15">Hospital<br>São Paulo</div>
+        <div class="estacao" id="est16">Santa<br>Cruz<br>🔁</div>
+        <div class="estacao" id="est17">Chácara<br>Klabin<br>🔁 1</div>
+<div class="estacao" id="est17a">CBT<br>1</div>
+      </div>
+    </div>
+    
+    <div class="linha-container">
+      <div class="linha" id="linha-estacoes-via2">
+        <div class="estacao" id="est1-v2">TM3</div>
+        <div class="estacao" id="est1a-v2">Capão<br>Redondo<br>2</div>
+        <div class="estacao" id="est2-v2">Campo<br>Limpo</div>
+        <div class="estacao" id="est3-v2">Vila das<br>Belezas</div>
+        <div class="estacao" id="est4-v2">Giovanni<br>Gronchi</div>
+        <div class="estacao" id="est5-v2">Santo<br>Amaro<br>🔁 9</div>
+        <div class="estacao" id="est6-v2">Largo<br>Treze</div>
+        <div class="estacao" id="est7-v2">Adolfo<br>Pinheiro</div>
+        <div class="estacao" id="est8-v2">⬆<br>Alto da<br>Boa Vista</div>
+        <div class="estacao" id="est9-v2">⬆<br>Borba<br>Gato</div>
+        <div class="estacao" id="est10-v2">⬆<br>Brooklin</div>
+        <div class="estacao" id="est11-v2">⬆<br>Campo<br>Belo</div>
+        <div class="estacao" id="est12-v2">Eucaliptos</div>
+        <div class="estacao" id="est13-v2">Moema</div>
+        <div class="estacao" id="est14-v2">AACD<br>Servidor</div>
+        <div class="estacao" id="est15-v2">Hospital<br>São Paulo</div>
+        <div class="estacao" id="est16-v2">Santa<br>Cruz<br>🔁</div>
+        <div class="estacao" id="est17a-v2">Chácara<br>Klabin<br>🔁2</div>
+<div class="estacao" id="est17-v2">CBT<br>2</div>
+      </div>
+    </div>
+    
+    <div class="via-label">Via 2 - Capão Redondo ➡ Chácara Klabin</div>
+  
+    <div id="status-trens" class="status-container"></div>
+    <div class="tempo" id="tempo">Tempo total: 0s</div>
+    <div class="tempo" id="tempo-medio-servico">Tempo Médio de Serviço: 0s</div>
+    
+    <div id="pote-counter" style="margin: 10px 0; font-size: 18px; font-weight: bold;">
+      Trens operando - POT: <span id="pote-value">0</span>/24
+    </div>
+    
+    <div class="controls">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <label for="potInicial" style="font-weight:bold; width: 150px;">POT inicial:</label>
+            <input type="number" id="potInicial" min="1" max="24" value="12" style="width: 150px; text-align:center;">
+            <button class="btn-iniciar" onclick="iniciarTrens()" style="width: 150px;">Iniciar Trens</button>
+            <button class="btn-reset-historico" onclick="resetarTudo()" style="width: 150px;">Resetar Tudo</button>
+            <button class="btn-parar" id="btnReterTrens" onclick="toggleReterTrens()" style="width: 150px;">Reter Trens</button>
+            <button class="btn-normalizar" onclick="normalizarLinha()" style="width: 150px;">Normalizar Linha</button>
+            <button class="btn-iniciar" id="btnAjustarLinha" onclick="toggleAjustarLinha()" style="width: 150px; background: #607d8b;">Ajustar Linha</button>
+        </div>
+    
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <button class="btn-inserir-trem" onclick="abrirInserirTrem()" style="width: 150px;">Inserir Trem</button>
+            <button class="btn-recolher" onclick="recolherTrem()" style="width: 150px;">Recolher Trem</button>
+            <select id="tremRecolherSelect" style="width: 150px;">
+                <option value="">Selecione o trem</option>
+            </select>
+            <select id="estacaoRecolherSelect" style="width: 150px;">
+                <option value="">Selecione a estação</option>
+                <option value="capao-v1">Capão Redondo - Via 1</option>
+                <option value="capao-v2">Capão Redondo - Via 2</option>
+                <option value="santo-v1">Santo Amaro - Via 1</option>
+                <option value="santo-v2">Santo Amaro - Via 2</option>
+                <option value="klabin-v1">Chácara Klabin - Via 1</option>
+                <option value="klabin-v2">Chácara Klabin - Via 2</option>
+            </select>
+        </div>
+    
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <select id="falhaTipoSelect" style="width: 150px;">
+                <option value="">Falha</option>
+                <option value="trem">Falha no Trem</option>
+                <option value="estacao">Falha na Estação</option>
+                <option value="x">Falha de X</option>
+            </select>
+            <select id="falhaSelect" style="width: 150px;">
+                <option value="">Tipo de falha</option>
+            </select>
+            <select id="falhaTremTipo" style="width: 150px; display: none;">
+                <option value="">Tipo de falha no trem</option>
+            </select>
+            <select id="falhaEstacaoTipo" style="width: 150px; display: none;">
+                <option value="">Tipo de falha na estação</option>
+            </select>
+            <select id="falhaXTipo" style="width: 150px; display: none;">
+                <option value="">Selecione o X</option>
+            </select>
+        </div>
+    
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <button class="btn-falha" onclick="aplicarFalha()" style="width: 150px;">Aplicar Falha</button>
+            <button class="btn-falha" onclick="aplicarFalhaAleatoria()" style="width: 150px;">Falha Aleatória</button>
+            <button class="btn-reset-historico" id="btnSolucao" onclick="solucionarFalha()" style="width: 150px;">Solução</button>
+            <button class="btn-download" onclick="baixarCSV()" style="width: 150px;">Baixar Histórico CSV</button>
+        </div>
+    
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <button onclick="aumentarPOT()" style="background:#4CAF50; color:white; width: 150px;">+ Trem</button>
+            <button onclick="diminuirPOT()" style="background:#F44336; color:white; width: 150px;">- Trem</button>
+        </div>
+    </div>
+    
+    <div class="falha-info" id="falha-info"></div>
+
+    <div id="modalInserirTrem" style="display:none; position:fixed; top:0;left:0;width:100vw;height:100vh;z-index:1000;background:#0005;">
+        <div style="background:#fff;padding:20px;max-width:320px;margin:60px auto;border-radius:8px;box-shadow:0 4px 20px #0002;position:relative;">
+            <h3>Inserir Trem Recolhido</h3>
+            <select id="tremInserirSelect" style="margin-bottom:12px;width:100%;">
+                <option value="">Selecione um trem</option>
+            </select>
+            <select id="estacaoInserirSelect" style="margin-bottom:12px;width:100%;">
+                <option value="">Selecione a estação</option>
+                <option value="capao-v1">Capão Redondo - Via 1</option>
+                <option value="capao-v2">Capão Redondo - Via 2</option>
+                <option value="giovanni-v1">TF 14</option>
+                <option value="santo-v2">TF 13</option>
+                <option value="klabin-v1">Chácara Klabin - Via 1</option>
+                <option value="klabin-v2">Chácara Klabin - Via 2</option>
+            </select>
+            <button onclick="inserirTremRecolhido()" class="btn-inserir-trem" style="margin-right:8px;">Inserir</button>
+            <button onclick="fecharInserirTrem()" style="background:#bbb;">Cancelar</button>
+        </div>
+    </div>
+  </div>
+  
+  <div class="historico-container">
+    <div class="historico-title">Histórico de Eventos</div>
+
+    <table id="historico-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Momento (s)</th>
+          <th>Evento</th>
+          <th>Detalhes</th>
+        </tr>
+      </thead>
+      <tbody id="historico-tbody"></tbody>
+    </table>
+  </div>
+  
+  <audio id="falha-audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto" controls></audio>
+  
+  <script>
+
+  // ========================== 
+  // Simulador Linha 5 Lilás JS
+  // ========================== 
+  
+const falhasTremTextos = [
+    "Mal súbito de passageiro", "Problema de sinalização", "Retenção de portas", "Freio acionado pelo CBTC", 
+    "Botão soco", "Sem laço de porta", "Intercom ar condicionado", "QRU01 Vias de fato", "QRU02 Comércio irregular", 
+    "QRU03 Pedinte", "QRU04 Importunação sexual", "QRU05 Roubo", "QRU06 Furto", "QRU07 Arma branca", "QRU08 Tumulto", 
+    "QRU09 Ocorrência com arma de fogo", "Meteoro caiu nos trilhos", "Codigo A", "Perda de comunicação", 
+    "Falha no ar condicionado", "Portas travadas", "Colisão com objeto", "Problema no pantógrafo", 
+     "Parada curta", "Parada longa", "Alfa Bravo", "Falha no sistema de freios", 
+  ];
+  
+  const falhasEstacaoTextos = [
+    "Mal súbito de passageiro", "Queda de energia", "Passageiro perdido no sistema", "Codigo A", 
+    "Incêndio na estação", "Portões de plataforma com problema", "Inundação", "Problema na escada rolante", 
+    "Acesso bloqueado", "Fumaça na plataforma", "Alarme falso de incêndio", "Vazamento de água", 
+    "Problema na bilheteria", "Pichação", "Esgoto entupido", "falha de PDM", 
+    "Alarme de emergência ativado", "Sem luz na estação", "Ataque de abelhas", "Problema no elevador"
+  ];
+  
+  // Mapeamento de estações de recolhimento
+  const estacoesRecolhimento = {
+    "capao-v1": "est1",
+    "capao-v2": "est1-v2", 
+    "santo-v1": "est5",
+    "santo-v2": "est5-v2",
+    "klabin-v1": "est17", 
+    "klabin-v2": "est17-v2"
+  };
+  
+  // 24 trens
+  const trens = Array.from({ length: 24 }).map((_, idx) => {
+    let corClass = 'ativa-trem-roxa'; // Todos os trens roxos
+    
+    return {
+      id: idx + 1,
+      cor: corClass,
+      nome: `Trem ${String(idx + 1).padStart(2, '0')}`,
+      delay: 0,
+      status: 'Aguardando partida...',
+      ativo: true,
+      recolhido: false,
+      falha: null,
+      estacaoRecolhimento: null,  // Nova propriedade para recolhimento
+      corOriginal: null           // Para armazenar a cor original
+    };
+  });
+  
+const estacoes_v2 = [
+  "est1-v2", "est1a-v2", "est2-v2", "est3-v2", "est4-v2",
+  "est5-v2", "est6-v2", "est7-v2", "est8-v2", "est9-v2",
+  "est10-v2", "est11-v2", "est12-v2", "est13-v2", "est14-v2",
+  "est15-v2", "est16-v2", "est17a-v2", "est17-v2"
+];
+
+  const estacoes_v1 = [
+    "est17", "est16", "est15", "est14", "est13", "est12", "est11", "est10", "est9", "est8", "est7", "est6", "est5", "est4", "est3", "est2", "est1"
+  ];
+
+  const LOOP = [
+    { via: 2, estacoes: estacoes_v2, sentido: "capao-klabin" },
+    { via: 1, estacoes: estacoes_v1, sentido: "klabin-capao" }
+  ];
+
+  let trensData = [];
+  let tempoTotal = 0;
+  let timer = null;
+  let trensReter = false;
+let draggedTrem = null;
+let touchClone = null; // Nova variável para o clone de touch
+  let falhaEstacao = null;
+  let falhaEstacaoTipo = null;
+  let falhaEstacaoNome = '';
+  let falhaTrem = {};
+  let historico = [];
+  let recolhidos = [];
+  let inserindoTrem = false;
+  let falhaMensagem = '';
+  let falhaAudioIsPlaying = false;
+  let modoAjustarLinha = false; // Novo: para o botão "Ajustar Linha"
+  let passageiros = {}; // Novo: contagem de passageiros por estação
+  let temposServico = []; // Novo: para calcular o tempo médio de serviço
+  const PASSAGEIROS_POR_TICK = 10; // Novo: passageiros que chegam por segundo
+  const LOTACAO_MAXIMA = 200; // Novo: limite para a superlotação
+
+  // Caminho do áudio
+  const FALHA_AUDIO_PATH = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+
+  // Mapeamento de falhas para soluções
+    const solucoesFalha = {
+    // Soluções para falhas de trem
+    "Mal súbito de passageiro": "Acionar o CCO e informar o carro para auxílio.",
+    "Problema de sinalização": "Comunicar a sinalização e prosseguir com autorização do CCO.",
+    "Retenção de portas": "Fazer reciclo de portas e informar o CCO.",
+    "Freio acionado pelo CBTC": "Fazer reciclo de modalidade.",
+    "Botão soco": "Comunicar ao CCO, carro e porta e aguardar instruções.",
+    "Sem laço de porta": "Realizar rearme de laço,  verificar o carro com problema e informar ao CCO",
+    "Intercom ar condicionado": "Informar o CCO e aguardar possível autorização de abertura de escotilhas",
+    "Perda de comunicação": "Acionar o CCO,.aguardar instruções para  operar em manual até restabelecer a comunicação.",
+    "Falha no ar condicionado": "Comunicar ao CCO.",
+    "Portas travadas": "Comunicar ao CCO, e após autorização, fazer destravamento manual das portas.",    "Emergência a bordo": "Informar o CCO.",
+    "Colisão com objeto": " Informar o CCO, descrever brevementea o tipo de colisão. ",
+    "Problema no pantógrafo": "Informar falha de Panto na tela do TCMS.",    "Incêndio pequeno": "Acionar o CCO e utilizar extintor a bordo, se seguro.",
+    "Parada curta": "Completar o alinhamento em MCS, prestar serviços em AM e informar o CCO.",
+    "Parada longa": "Informar o CCO e emitir PA  Atencão! Devido a falha operacional este trem não prestará serviço nesta estação."
+ };
+
+  
+  const opcoesSolucao = [
+    // Opções de solução genéricas para outras falhas
+    "Acionar o CCO.", 
+   
+  ];
+
+  // Função para formatar nome da estação de recolhimento
+  function formatarNomeEstacaoRecolhimento(estacao) {
+    switch(estacao) {
+      case "capao-v1": return "Capão Redondo - Via 1";
+      case "capao-v2": return "Capão Redondo - Via 2";
+      case "santo-v1": return "Santo Amaro - Via 1";
+      case "santo-v2": return "Santo Amaro - Via 2";
+      case "klabin-v1": return "Chácara Klabin - Via 1";
+      case "klabin-v2": return "Chácara Klabin - Via 2";
+      default: return estacao;
+    }
+  }
+
+  // Função para recolher trem em estação específica
+  function recolherTrem() {
+    const tremValor = document.getElementById('tremRecolherSelect').value;
+    const estacaoRecolher = document.getElementById('estacaoRecolherSelect').value;
+    
+    if (!tremValor) return alert('Selecione o trem para recolher');
+    if (!estacaoRecolher) return alert('Selecione a estação para recolher');
+    
+    const tremNum = Number(tremValor);
+    const trem = trens.find(t => t.id === tremNum);
+    if (!trem) return;
+    
+    // Define a estação de destino para o recolhimento
+    trem.estacaoRecolhimento = estacaoRecolher;
+    trem.corOriginal = trem.cor; // Salva a cor original
+    trem.cor = 'ativa-trem-vermelha'; // Muda para vermelho
+    
+    registrarHistorico(`${trem.nome} será recolhido em ${formatarNomeEstacaoRecolhimento(estacaoRecolher)}`);
+    
+    atualizarLinha();
+ 
+  }
+ 
+
+  // Função para inserir um marcador de texto na linha central
+function inserirMarcadorCentral(texto, estacaoAnteriorId) {
+    const estacaoAnterior = document.getElementById(estacaoAnteriorId);
+    if (!estacaoAnterior) return;
+
+    // Criar o elemento do marcador
+    const marcador = document.createElement('div');
+    marcador.className = 'marcador-central';
+    marcador.textContent = texto;
+
+    // Adiciona o marcador ao corpo do documento (ou ao contêiner principal)
+    document.body.appendChild(marcador);
+
+    // Obtém as coordenadas da estação anterior e da próxima estação
+    const estacaoAtual = estacaoAnterior.getBoundingClientRect();
+    const proximaEstacao = estacaoAnterior.nextElementSibling ? estacaoAnterior.nextElementSibling.getBoundingClientRect() : null;
+
+    if (!proximaEstacao) return;
+
+    // Calcula a posição central entre as estações
+    const centroX = (estacaoAtual.right + proximaEstacao.left) / 2;
+    const centroY = (estacaoAtual.top + proximaEstacao.top) / 2;
+
+    // Ajusta o estilo para posicionar o marcador
+    marcador.style.cssText = `
+        position: absolute;
+        left: ${centroX}px;
+        top: ${centroY +95}px;
+        transform: translate(-50%, -50%);
+        background: #222c;
+        color: #fff;
+        font-size: 11px;
+        padding: 1px 2px;
+        border-radius: 7px;
+        white-space: nowrap;
+        z-index: 5;
+        pointer-events: none;
+        font-weight: bold;
+        text-shadow: 0 1px 2px #0006;
+    `;
+}
+// Adiciona o marcador "X" em cada segmento da Via 1
+inserirMarcadorCentral('X 40 41', 'est18');
+  inserirMarcadorCentral('X 42 43 44', 'est1');
+inserirMarcadorCentral('X 45 45P', 'est4');
+inserirMarcadorCentral('X 46', 'est5');
+inserirMarcadorCentral('X 47', 'est6');
+inserirMarcadorCentral('X 48', 'est7');
+
+
+inserirMarcadorCentral('X 49', 'est10');
+inserirMarcadorCentral('X 50', 'est11');
+inserirMarcadorCentral('X 51', 'est13');
+
+inserirMarcadorCentral('X 52', 'est16');
+  inserirMarcadorCentral('X 53', 'est17');
+  // Função para avançar a simulação
+
+ function avancarSimulacao() {
+  tempoTotal++;
+
+  // Novo: Adiciona passageiros às estações
+  [...estacoes_v1, ...estacoes_v2].forEach(est => {
+    passageiros[est] = (passageiros[est] || 0) + PASSAGEIROS_POR_TICK;
+  });
+
+  // Novo: Verifica se o modo automático está ativado
+  if (modoAjustarLinha) {
+    verificarAjusteAutomatico();
+  }
+
+  // Primeiro, processe os trens que estão marcados para recolhimento
+  for (const trem of trens) {
+    if (trem.estacaoRecolhimento && trem.ativo && !trem.recolhido) {
+      const data = trensData.find(td => td.id === trem.id);
+      if (!data) continue;
+
+      const estacaoAtual = LOOP[data.loopStep].estacoes[data.idx];
+      const estacaoDestino = estacoesRecolhimento[trem.estacaoRecolhimento];
+
+      if (estacaoAtual === estacaoDestino) {
+        trem.ativo = false;
+        trem.recolhido = true;
+        trem.estacaoRecolhimento = null;
+        trensData = trensData.filter(td => td.id !== trem.id);
+
+        if (!recolhidos.includes(trem.id)) {
+          recolhidos.push(trem.id);
+        }
+
+        registrarHistorico(`${trem.nome} recolhido em ${formatarNomeEstacaoRecolhimento(estacaoRecolher)}`);
+        atualizarTremRecolherSelect();
+        atualizarTremInserirSelect();
+        atualizarPOTECounter();
+      }
+    }
+  }
+
+  // Depois, processe o movimento normal dos trens
+  for (const trem of trens) {
+    if (!trem.ativo || trem.recolhido) continue;
+    const data = trensData.find(td => td.id === trem.id);
+    if (!data) continue;
+
+    data.aguardandoProximoTrem = false;
+
+    // 🚦 Checagem de falha em X — trava só quem vai entrar no trecho
+    if (falhaX && falhasXmap[falhaXNome]) {
+      const estacoesBloqueadas = falhasXmap[falhaXNome];
+      const estacoesArr = LOOP[data.loopStep].estacoes;
+
+      // próxima estação que o trem tentaria acessar
+      const proximaEstacao = estacoesArr[data.idx + 1] || null;
+
+      if (proximaEstacao && estacoesBloqueadas.includes(proximaEstacao)) {
+        trem.status = `Parado próximo a ${falhaXNome}`;
+        data.tempoParado++;
+        data.tempoParadoEstacao = 0;
+        continue;
+      }
+    }
+
+    if (data.delay > 0) {
+      data.delay--;
+      trem.status = `Aguardando partida (${data.delay}s)`;
+      continue;
+    }
+
+    // Para trens a serem recolhidos, o tempo de parada é metade do normal
+    const tempoParadaEstacao = trem.estacaoRecolhimento ? 1.5 : (modoAjustarLinha && passageiros[LOOP[data.loopStep].estacoes[data.idx]] > LOTACAO_MAXIMA ? 2 : 3);
+
+
+    if (trem.falha) {
+      trem.status = `Parado por falha (${trem.falha})`;
+      continue;
+    }
+
+    let loopStep = data.loopStep;
+    let estacoesArr = LOOP[loopStep].estacoes;
+
+    if (falhaEstacao && estacoesArr[data.idx] === falhaEstacao) {
+      trem.status = `Parado em ${formatarEstacao(estacoesArr[data.idx])} (${falhaEstacaoTipo})`;
+      data.tempoParado++;
+      data.tempoParadoEstacao = 0;
+      continue;
+    }
+
+    if (trensReter) {
+      trem.status = `Parado em ${formatarEstacao(estacoesArr[data.idx])} (Retido)`;
+      data.tempoParado++;
+      data.tempoParadoEstacao = 0;
+      continue;
+    }
+
+    if (!data.aguardando && proximaPosicaoOcupada(loopStep, data.idx, trem.id)) {
+      trem.status = `Aguardando liberação da próxima estação`;
+      data.tempoParadoEstacao = 0;
+      data.aguardandoProximoTrem = true;
+      continue;
+    }
+
+    if (typeof data.tempoParadoEstacao !== "number") data.tempoParadoEstacao = 0;
+
+    if (data.tempoParadoEstacao < tempoParadaEstacao) {
+      data.tempoParadoEstacao++;
+      trem.status = `Parado na estação ${formatarEstacao(estacoesArr[data.idx])} (${Math.ceil(data.tempoParadoEstacao)}/${Math.ceil(tempoParadaEstacao)}s)`;
+      continue;
+    }
+
+    // Novo: Simulação de embarque de passageiros
+    const estacaoAtualID = estacoesArr[data.idx];
+    if (estacaoAtualID) {
+      const passageirosEmbarcados = Math.min(passageiros[estacaoAtualID] || 0, 3000); // 3000 é uma capacidade simbólica
+      passageiros[estacaoAtualID] -= passageirosEmbarcados;
+      if (passageiros[estacaoAtualID] < 0) passageiros[estacaoAtualID] = 0;
+
+      // Novo: Registra o tempo de serviço
+      temposServico.push(data.tempoParadoEstacao);
+    }
+    
+    trem.status = `Em ${formatarEstacao(estacoesArr[data.idx])}`;
+
+    if (!data.aguardando) {
+      if (data.idx < estacoesArr.length - 1) {
+        data.idx++;
+        data.tempoParadoEstacao = 0;
+      } else {
+        data.loopStep = (data.loopStep + 1) % LOOP.length;
+        data.idx = 0;
+        trem.status = 'Aguardando retorno...';
+        data.aguardando = true;
+        data.tempoParadoEstacao = 0;
+        registrarHistorico(`${trem.nome} chegou ao fim do trecho (${LOOP[data.loopStep].via === 2 ? "Capão via 2 → Klabin via 2" : "Klabin via 1 → Capão via 1"})`);
+      }
+    } else {
+      if (!data.retPause) data.retPause = 1;
+      else data.retPause++;
+
+      if (data.retPause > 4) {
+        data.aguardando = false;
+        data.idx = 0;
+        data.retPause = 0;
+        data.tempoParadoEstacao = 0;
+        registrarHistorico(`${trem.nome} iniciando próximo trecho do loop`);
+      }
+    }
+  }
+
+  atualizarLinha();
+  atualizarTempo();
+  atualizarTempoMedioServico(); // Novo: Atualiza o tempo médio
+  atualizarStatusEstacoes(); // Novo: Atualiza status das estações (passageiros, lotação)
+}
+
+
+  // Função para normalizar a linha
+  function normalizarLinha() {
+    for (const t of trens) {
+      t.falha = null;
+      // Restaura a cor original se o trem estava marcado para recolhimento
+      if (t.corOriginal) {
+        t.cor = t.corOriginal;
+        t.corOriginal = null;
+      }
+      t.estacaoRecolhimento = null;
+ // também limpa falha de X
+    falhaX = null;
+    falhaXNome = '';
+    document.querySelectorAll('.marcador-central.x-falha')
+      .forEach(el => el.classList.remove('x-falha'));
+    }
+    
+    falhaEstacao = null;
+    falhaEstacaoTipo = null;
+    falhaMensagem = '';
+    mostrarFalhaInfo();
+    registrarHistorico('Linha normalizada');
+    atualizarLinha();
+    pararAudioFalha();
+  }
+
+  // Função para atualizar a linha
+  function atualizarLinha() {
+    estacoes_v2.concat(estacoes_v1).forEach(e => {
+      const el = document.getElementById(e);
+      if (el) {
+        el.className = 'estacao';
+        let c = el.childNodes;
+        for (let i = c.length - 1; i >= 0; i--) {
+          if (c[i].classList && (c[i].classList.contains('trem-parado-msg') || c[i].classList.contains('trem-num-label') || c[i].classList.contains('passageiros-info') || c[i].classList.contains('in-alert'))) {
+            el.removeChild(c[i]);
+          }
+        }
+      }
+    });
+    
+    if (falhaEstacao) {
+  const el = document.getElementById(falhaEstacao);
+  if (el) el.classList.add('falha');
+}
+// Destaca/limpa o X em falha
+  document.querySelectorAll('.marcador-central').forEach(el => {
+    if (falhaX && el.textContent === falhaXNome) {
+      el.classList.add('x-falha');   // deixa piscando em vermelho
+    } else {
+      el.classList.remove('x-falha'); // remove se já tiver sido normalizado
+    }
+  });
+    
+    let ocupacao = {};
+    for (const trem of trens) {
+      if (!trem.ativo || trem.recolhido) continue;
+      const tremData = trensData.find(td => td.id === trem.id);
+      if (!tremData) continue;
+      
+      let loopStep = tremData.loopStep;
+      let idx = tremData.idx;
+      let viaArr = LOOP[loopStep].estacoes;
+      let est = viaArr[idx];
+      ocupacao[est] = trem.id;
+    }
+    
+    for (const trem of trens) {
+      if (!trem.ativo || trem.recolhido) continue;
+      const tremData = trensData.find(td => td.id === trem.id);
+      if (!tremData) continue;
+      
+      let loopStep = tremData.loopStep;
+      let idx = tremData.idx;
+      let viaArr = LOOP[loopStep].estacoes;
+      let est = viaArr[idx];
+      const el = document.getElementById(est);
+      
+      if (el) {
+        // Usa a cor vermelha se o trem está a caminho do recolhimento
+        el.classList.add(trem.estacaoRecolhimento ? 'ativa-trem-vermelha' : trem.cor);
+        
+        let numLabel = document.createElement('div');
+        numLabel.className = "trem-num-label";
+        numLabel.style.cssText = "position:absolute;top:-19px;left:10%;transform:translateX(-60%);background:#fff8;padding:2px 8px;border-radius:8px;font-weight:bold;font-size:14px;color:#222;border:1px solid #bbb;z-index:11;";
+        
+        // Adiciona um indicador (R) se o trem está a caminho do recolhimento
+        const recolhimentoIndicator = trem.estacaoRecolhimento ? " (R)" : "";
+        numLabel.textContent = ` T ${trem.id.toString().padStart(2, '0')}${recolhimentoIndicator}`;
+        numLabel.draggable = !!trensReter;
+        if (trensReter) {
+          numLabel.addEventListener('dragstart', dragStart);
+          numLabel.addEventListener('touchstart', touchStart, {passive:false});
+          numLabel.addEventListener('touchmove', touchMove, {passive:false});
+          numLabel.addEventListener('touchend', touchEnd, {passive:false});
+        } else {
+          numLabel.removeEventListener('dragstart', dragStart);
+          numLabel.removeEventListener('touchstart', touchStart);
+          numLabel.removeEventListener('touchmove', touchMove);
+          numLabel.removeEventListener('touchend', touchEnd);
+        }
+
+// Se o trem está em falha → deixa vermelho piscando
+if (trem.falha) {
+  numLabel.classList.add("trem-falha-label");
+}
+
+el.appendChild(numLabel);
+
+        
+        if (trem.falha) {
+          inserirParadoMsg(el, trem.falha);
+        } else if (trensReter) {
+          inserirParadoMsg(el, 'Retido');
+        } else if (falhaEstacao && est.replace('-v2', '') === falhaEstacao.replace('-v2', '')) {
+          inserirParadoMsg(el, falhaEstacaoTipo || 'Falha Estação');
+        } else if (tremData.aguardandoProximoTrem) {
+          inserirParadoMsg(el, 'Aguardando');
+        } else if (trem.estacaoRecolhimento) {
+          inserirParadoMsg(el, 'Para recolhimento');
+        }
+      }
+    }
+  }
+  
+  // Novo: Função para atualizar o status das estações (passageiros e alertas)
+  function atualizarStatusEstacoes() {
+    [...estacoes_v1, ...estacoes_v2].forEach(est => {
+      const el = document.getElementById(est);
+      if (el) {
+        // Remove elementos de status antigos
+        el.querySelectorAll('.passageiros-info, .in-alert').forEach(e => e.remove());
+        
+        // Adiciona contagem de passageiros
+        const pInfo = document.createElement('div');
+        pInfo.className = 'passageiros-info';
+        pInfo.textContent = `P: ${Math.floor(passageiros[est] || 0)}`;
+        el.appendChild(pInfo);
+        
+        // Verifica se está superlotado e adiciona o alerta
+        if ((passageiros[est] || 0) > LOTACAO_MAXIMA) {
+          el.classList.add('super-lotada');
+          const inAlert = document.createElement('div');
+          inAlert.className = 'in-alert';
+          inAlert.textContent = 'IN';
+          el.appendChild(inAlert);
+        } else {
+          el.classList.remove('super-lotada');
+        }
+      }
+    });
+  }
+
+  // Novo: Função para ativar/desativar o modo de ajuste automático
+  function toggleAjustarLinha() {
+      modoAjustarLinha = !modoAjustarLinha;
+      const btn = document.getElementById('btnAjustarLinha');
+      btn.textContent = modoAjustarLinha ? "Modo Normal" : "Ajustar Linha";
+      btn.style.background = modoAjustarLinha ? "#FF9800" : "#607d8b";
+      registrarHistorico(modoAjustarLinha ? "Modo 'Ajustar Linha' Ativado" : "Modo 'Ajustar Linha' Desativado");
+  }
+
+  // Novo: Lógica do modo automático
+  function verificarAjusteAutomatico() {
+      // Prioriza encontrar a estação mais lotada
+      const estacoesLotadas = Object.keys(passageiros)
+          .filter(est => passageiros[est] > LOTACAO_MAXIMA)
+          .sort((a, b) => passageiros[b] - passageiros[a]);
+
+      if (estacoesLotadas.length > 0) {
+          const estacaoAlvo = estacoesLotadas[0];
+          
+          // Lógica de inserção automática de trem (NOVA)
+          if (recolhidos.length > 0) {
+              // Adicionei os novos TFs aqui
+              const pontosInsercao = ["capao-v2", "klabin-v2", "santo-v2", "giovanni-v1"];
+              const pontoInsercao = pontosInsercao[Math.floor(Math.random() * pontosInsercao.length)];
+              inserirTremRecolhido(recolhidos[0], pontoInsercao);
+              registrarHistorico(`Ajuste Automático: Trem inserido em ${formatarNomeEstacaoRecolhimento(pontoInsercao)} para aliviar a linha.`);
+          }
+          
+          // Lógica original para acelerar trens existentes
+          let tremCandidato = trensData.find(td => {
+              const estacaoTrem = LOOP[td.loopStep].estacoes[td.idx];
+              return (estacaoTrem === 'est17' || estacaoTrem === 'est1-v2') && !trens.find(t=> t.id === td.id).falha;
+          });
+
+          if (tremCandidato) {
+              // Reduz o tempo de parada no terminal para acelerar a saída
+              const trem = trens.find(t => t.id === tremCandidato.id);
+              if (trem.status.includes('Aguardando retorno')) {
+                  tremCandidato.retPause = 4; // Faz com que o trem saia no próximo tick
+                  registrarHistorico(`Ajuste Automático: Acelerando ${trem.nome} para atender ${formatarEstacao(estacaoAlvo)}`);
+              }
+          }
+      }
+  }
+
+
+  // ==========================
+  // FUNÇÕES EXISTENTES (mantidas para completude)
+  // ==========================
+  
+  function iniciarTrens() {
+  resetarTudo();
+  const potInicial = Number(document.getElementById('potInicial').value) || 12;
+  const todasEstacoes = estacoes_v2.concat(estacoes_v1);
+  let posicoesLivres = [...todasEstacoes];
+  let trensPosicoes = [];
+
+  // Distribuição rápida sem cálculo de espaçamento mínimo
+  for (let i = 0; i < potInicial; i++) {
+    if (posicoesLivres.length === 0) break;
+    let idx = Math.floor(Math.random() * posicoesLivres.length);
+    let estacaoEscolhida = posicoesLivres[idx];
+    trensPosicoes.push({ estacao: estacaoEscolhida });
+    posicoesLivres = posicoesLivres.filter((pos) => pos !== estacaoEscolhida);
+  }
+
+  trensData = [];
+  for (let i = 0; i < potInicial; i++) {
+    let trem = trens[i];
+    let estacao = trensPosicoes[i].estacao;
+    let loopStep, idx;
+
+    if (estacoes_v2.includes(estacao)) {
+      loopStep = 0;
+      idx = estacoes_v2.indexOf(estacao);
+    } else {
+      loopStep = 1;
+      idx = estacoes_v1.indexOf(estacao);
+    }
+
+    trem.ativo = true;
+    trem.recolhido = false;
+    trem.falha = null;
+    trensData.push({
+      id: trem.id,
+      loopStep,
+      idx,
+      delay: 0,
+      aguardando: false,
+      tempoParado: 0,
+      tempoParadoEstacao: 0,
+      aguardandoProximoTrem: false
+    });
+  }
+
+  for (let i = potInicial; i < trens.length; i++) {
+    trens[i].ativo = false;
+    trens[i].recolhido = true;
+    trens[i].falha = null;
+  }
+
+  atualizarLinha();
+  atualizarTempo();
+  atualizarHistorico();
+  atualizarTremRecolherSelect();
+  atualizarTremInserirSelect();
+  mostrarFalhaInfo();
+  atualizarPOTECounter();
+
+  pararTimer();
+  timer = setInterval(avancarSimulacao, 1000);
+}
+
+  function aumentarPOT() {
+  // Encontra o primeiro trem disponível que não está ativo
+  const trensNaoAtivos = trens.filter(t => !t.ativo);
+  if (trensNaoAtivos.length === 0) {
+    alert("Todos os 24 trens já estão na linha.");
+    return;
+  }
+  
+  const trem = trensNaoAtivos[0];
+  
+  // Escolhe uma estação aleatória livre
+  const todasEstacoes = estacoes_v1.concat(estacoes_v2);
+  let estacaoEscolhida;
+  let ocupadas = trensData.map(td => LOOP[td.loopStep].estacoes[td.idx]);
+
+  let livres = todasEstacoes.filter(e => !ocupadas.includes(e));
+  if (livres.length === 0) {
+    alert("Nenhuma estação livre para inserir trem.");
+    return;
+  }
+
+  estacaoEscolhida = livres[Math.floor(Math.random() * livres.length)];
+
+  // Define a via e índice
+  let newLoopStep, newIdx;
+  if (estacoes_v2.includes(estacaoEscolhida)) {
+    newLoopStep = 0;
+    newIdx = estacoes_v2.indexOf(estacaoEscolhida);
+  } else {
+    newLoopStep = 1;
+    newIdx = estacoes_v1.indexOf(estacaoEscolhida);
+  }
+
+  // Ativa o trem
+  trem.ativo = true;
+  trem.recolhido = false;
+  trem.falha = null;
+
+  trensData.push({
+    id: trem.id,
+    loopStep: newLoopStep,
+    idx: newIdx,
+    delay: 0,
+    aguardando: false,
+    tempoParado: 0,
+    tempoParadoEstacao: 0,
+    aguardandoProximoTrem: false
+  });
+
+  // Remove o trem da lista de recolhidos se ele estava lá
+  recolhidos = recolhidos.filter(id => id !== trem.id);
+
+  registrarHistorico(`${trem.nome} inserido aleatoriamente em ${formatarEstacao(estacaoEscolhida)}`);
+  atualizarLinha();
+  atualizarTremRecolherSelect();
+  atualizarTremInserirSelect();
+  atualizarPOTECounter();
+}
+
+  function diminuirPOT() {
+    const tremAtivo = trens.filter(t => t.ativo && !t.recolhido).pop();
+    if (tremAtivo) {
+      tremAtivo.ativo = false;
+      tremAtivo.recolhido = true;
+      trensData = trensData.filter(td => td.id !== tremAtivo.id);
+      recolhidos.push(tremAtivo.id);
+      registrarHistorico(`${tremAtivo.nome} recolhido pelo ajuste do POT`);
+      atualizarLinha();
+      atualizarTremRecolherSelect();
+      atualizarTremInserirSelect();
+      atualizarPOTECounter();
+    } else {
+      alert("Nenhum trem ativo para recolher.");
+    }
+  }
+
+  function resetarTudo() {
+    pararTimer();
+    trensData = [];
+    for (const t of trens) {
+      t.status = 'Aguardando partida...';
+      t.ativo = true;
+      t.recolhido = false;
+      t.falha = null;
+      t.estacaoRecolhimento = null;
+      t.corOriginal = null;
+    }
+    tempoTotal = 0;
+    trensReter = false;
+    falhaEstacao = null;
+    falhaEstacaoTipo = null;
+    falhaEstacaoNome = '';
+    falhaTrem = {};
+    recolhidos = [];
+    inserindoTrem = false;
+    historico = [];
+    falhaMensagem = '';
+    modoAjustarLinha = false; // Novo: resetar o modo
+    passageiros = {}; // Novo: resetar os passageiros
+    temposServico = []; // Novo: resetar o tempo de serviço
+
+    document.getElementById('btnAjustarLinha').textContent = 'Ajustar Linha';
+    document.getElementById('btnAjustarLinha').style.background = "#607d8b";
+
+    atualizarLinha();
+    atualizarTempo();
+    atualizarHistorico();
+    mostrarFalhaInfo();
+    document.getElementById('btnReterTrens').textContent = 'Reter Trens';
+    atualizarTremRecolherSelect();
+    atualizarTremInserirSelect();
+    pararAudioFalha();
+    atualizarPOTECounter();
+    atualizarTempoMedioServico(); // Novo: reseta o display
+    atualizarStatusEstacoes(); // Novo: reseta os status
+  }
+
+  function atualizarTempo() {
+    document.getElementById('tempo').textContent = `Tempo total: ${tempoTotal}s`;
+  }
+  
+  // Novo: Função para atualizar o tempo médio de serviço
+  function atualizarTempoMedioServico() {
+    const tempoMedio = temposServico.length > 0 ? (temposServico.reduce((sum, time) => sum + time, 0) / temposServico.length).toFixed(2) : 0;
+    document.getElementById('tempo-medio-servico').textContent = `Tempo Médio de Serviço: ${tempoMedio}s`;
+  }
+
+  function pararTimer() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  function estacaoOcupada(loopStep, idx, tremId) {
+    for (const trem of trens) {
+      if (!trem.ativo || trem.recolhido || trem.id === tremId) continue;
+      const data = trensData.find(td => td.id === trem.id);
+      if (!data) continue;
+      if (data.loopStep === loopStep && data.idx === idx) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function proximaPosicaoOcupada(loopStep, idx, tremId) {
+    const currentLoop = LOOP[loopStep];
+    const estacoesArr = currentLoop.estacoes;
+
+    if (idx < estacoesArr.length - 1) {
+      return estacaoOcupada(loopStep, idx + 1, tremId);
+    }
+
+    if (idx === estacoesArr.length - 1) {
+      const nextLoopStep = (loopStep + 1) % LOOP.length;
+      const nextLoopFirstStationIdx = 0;
+      return estacaoOcupada(nextLoopStep, nextLoopFirstStationIdx, tremId);
+    }
+    return false;
+  }
+
+  
+function toggleReterTrens() {
+  trensReter = !trensReter;
+  const btn = document.getElementById('btnReterTrens');
+  btn.textContent = trensReter ? "Retomar Trens" : "Reter Trens";
+  registrarHistorico(trensReter ? "Trens retidos na linha" : "Trens retomados");
+
+  // torna as estações zonas de drop
+  document.querySelectorAll('.estacao').forEach(st => {
+    st.addEventListener('dragover', dragOver);
+    st.addEventListener('drop', drop);
+  });
+
+  atualizarLinha();
+}
+
+
+  
+function dragStart(event) {
+  draggedTrem = event.target;
+  event.dataTransfer.effectAllowed = "move";
+}
+
+function dragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+
+function drop(event) {
+  event.preventDefault();
+  const station = event.currentTarget || event.target.closest('.estacao');
+  if (!station || !draggedTrem) return;
+
+  // Identificar trem pelo número
+  const m = draggedTrem.textContent.match(/T\s*(\d{2})/);
+  if (!m) return;
+  const id = Number(m[1]);
+  const trem = trens.find(t => t.id === id);
+  if (!trem) return;
+
+  // Atualizar posição lógica
+  const stationId = station.id;
+  const tremData = trensData.find(t => t.id === id);
+  if (!tremData) return;
+
+  if (estacoes_v2.includes(stationId)) {
+    tremData.loopStep = 0;
+    tremData.idx = estacoes_v2.indexOf(stationId);
+  } else if (estacoes_v1.includes(stationId)) {
+    tremData.loopStep = 1;
+    tremData.idx = estacoes_v1.indexOf(stationId);
+  }
+
+  atualizarLinha();
+}
+
+// Funções de toque para dispositivos móveis
+function touchStart(e) {
+  if (!trensReter) return;
+  draggedTrem = e.target;
+  e.preventDefault();
+  
+  // Clonar o elemento para visualização
+  touchClone = draggedTrem.cloneNode(true);
+  touchClone.style.position = "absolute";
+  touchClone.style.pointerEvents = "none";
+  touchClone.style.opacity = "0.8";
+  touchClone.style.transition = "none";
+  document.body.appendChild(touchClone);
+
+  touchMove(e); // Posicionar o clone inicialmente
+}
+
+function touchMove(e) {
+  if (touchClone) {
+    const touch = e.touches[0];
+    touchClone.style.left = `${touch.clientX}px`;
+    touchClone.style.top = `${touch.clientY}px`;
+  }
+}
+
+function touchEnd(e) {
+  if (touchClone) {
+    const touch = e.changedTouches[0];
+    const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+    const station = elem?.closest(".estacao");
+    if (station && draggedTrem) {
+      const m = draggedTrem.textContent.match(/T\s*(\d{2})/);
+      if (m) {
+        const id = Number(m[1]);
+        const trem = trens.find(t => t.id === id);
+        const tremData = trensData.find(t => t.id === id);
+        if (trem && tremData) {
+          const stationId = station.id;
+          if (estacoes_v2.includes(stationId)) {
+            tremData.loopStep = 0;
+            tremData.idx = estacoes_v2.indexOf(stationId);
+          } else if (estacoes_v1.includes(stationId)) {
+            tremData.loopStep = 1;
+            tremData.idx = estacoes_v1.indexOf(stationId);
+          }
+        }
+      }
+      atualizarLinha();
+    }
+    touchClone.remove();
+    touchClone = null;
+  }
+  draggedTrem = null;
+  e.preventDefault();
+}
+
+
+function atualizarPosicoes() {
+  document.querySelectorAll('.estacao').forEach(stEl => {
+    const label = stEl.querySelector('.trem-num-label');
+    if (!label) return;
+    const m = label.textContent.match(/T\s*(\d{2})/);
+    if (!m) return;
+    const id = Number(m[1]);
+    const td = trens.find(x => x.id === id);
+    if (!td) return;
+    const stationId = stEl.id;
+    if (estacoes_v2.includes(stationId)) {
+      td.loopStep = 0;
+      td.idx = estacoes_v2.indexOf(stationId);
+    } else if (estacoes_v1.includes(stationId)) {
+      td.loopStep = 1;
+      td.idx = estacoes_v1.indexOf(stationId);
+    }
+  });
+}
+
+
+function aplicarFalha() {
+    const falhaTipo = document.getElementById('falhaTipoSelect').value;
+    
+    if (falhaTipo === "estacao") {
+        const falhaSelect = document.getElementById('falhaSelect').value;
+        if (!falhaSelect) { alert("Selecione uma estação."); return; }
+        falhaEstacao = falhaSelect;
+        falhaEstacaoTipo = document.getElementById('falhaEstacaoTipo').value;
+        if (!falhaEstacaoTipo) { alert("Selecione um tipo de falha de estação."); return; }
+        falhaMensagem = `Falha em estação: ${formatarEstacao(falhaEstacao)} - ${falhaEstacaoTipo}`;
+        registrarHistorico(falhaMensagem);
+        tocarAudioFalhaLoop();
+    } else if (falhaTipo === "trem") {
+        const falhaSelect = document.getElementById('falhaSelect').value;
+        if (!falhaSelect) { alert("Selecione um trem."); return; }
+        const tremId = Number(falhaSelect.replace('trem', ''));
+        const trem = trens.find(t => t.id === tremId);
+        falhaTremTipo = document.getElementById('falhaTremTipo').value;
+        if (!falhaTremTipo) { alert("Selecione um tipo de falha de trem."); return; }
+        if (trem) {
+            trem.falha = falhaTremTipo;
+            falhaMensagem = `Falha no ${trem.nome}: ${trem.falha}`;
+            registrarHistorico(falhaMensagem);
+            tocarAudioFalhaLoop();
+        }
+    } else if (falhaTipo === "x") {
+        const falhaXTipo = document.getElementById('falhaXTipo').value;
+        if (!falhaXTipo) { alert("Selecione um X."); return; }
+        falhaX = true;
+        falhaXNome = falhaXTipo;
+        falhaMensagem = `Falha no ${falhaXNome}`;
+        registrarHistorico(falhaMensagem);
+        tocarAudioFalhaLoop();
+    } else {
+        alert("Selecione o tipo de falha.");
+        return;
+    }
+
+    mostrarFalhaInfo();
+    atualizarLinha();
+  }
+// Variáveis globais novas
+    // ==============================
+    let falhaX = null;
+    let falhaXNome = '';
+
+const falhasXmap = {
+  "X 40 41": ["est1", "est1-v2"],
+  "X 42 43 44": ["est1-v2", "est2-v2"], // Adicionando via 2
+  "X 45 45P": ["est4", "est5-v2"],                      // Adicionando via 2
+  "X 46": ["est5", "est6-v2"],                         // Adicionando via 2
+  "X 47": ["est6", "est7-v2"],                         // Adicionando via 2
+  "X 48": ["est7", "est8-v2"],                         // Adicionando via 2
+  "X 49": ["est10", "est11-v2"],                        // Adicionando via 2
+  "X 50": ["est11", "est12-v2"],                        // Adicionando via 2
+  "X 51": ["est13", "est14-v2"],                        // Adicionando via 2
+  "X 52": ["est16", "est17a-v2"],                        // Adicionando via 2
+  "X 53": ["est17", "est17a-v2"],                       // Adicionando via 2
+};
+  function aplicarFalhaAleatoria() {
+      const tipo = Math.random();
+
+      if (tipo < 0.33) {
+        // Falha em estação
+        const idx = Math.floor(Math.random() * estacoes_v2.length);
+        const tipoIdx = Math.floor(Math.random() * falhasEstacaoTextos.length);
+        falhaEstacao = estacoes_v2[idx];
+        falhaEstacaoTipo = falhasEstacaoTextos[tipoIdx];
+        falhaMensagem = `Falha aleatória em ${formatarEstacao(falhaEstacao)}: ${falhaEstacaoTipo}`;
+        registrarHistorico(`Falha aleatória estação: ${formatarEstacao(falhaEstacao)} (${falhaEstacaoTipo})`);
+      } else if (tipo < 0.66) {
+        // Falha em trem
+        const tremId = Math.floor(Math.random() * trens.filter(t => t.ativo).length);
+        let trem = trens.filter(t => t.ativo)[tremId];
+        if (trem) {
+          const tipoIdx = Math.floor(Math.random() * falhasTremTextos.length);
+          trem.falha = falhasTremTextos[tipoIdx];
+          falhaMensagem = `Falha aleatória no ${trem.nome}: ${falhasTremTextos[tipoIdx]}`;
+          registrarHistorico(`Falha aleatória ${trem.nome}: ${falhasTremTextos[tipoIdx]}`);
+        }
+      } else {
+        // Falha em X
+        const todosX = ["X 40 41", "X 42 43 44", "X 45 45P", "X 46", "X 47", "X 48", "X 49", "X 50", "X 51", "X 52", "X 53"];
+        falhaXNome = todosX[Math.floor(Math.random() * todosX.length)];
+        falhaX = true;
+        falhaMensagem = `Falha no ${falhaXNome}`;
+        registrarHistorico(`Falha aleatória ${falhaXNome}`);
+      }
+
+      tocarAudioFalhaLoop();
+      mostrarFalhaInfo();
+      atualizarLinha();
+    }
+
+  function tocarAudioFalhaLoop() {
+    let audio = document.getElementById('falha-audio');
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.id = 'falha-audio';
+      audio.src = FALHA_AUDIO_PATH;
+      audio.loop = true;
+      document.body.appendChild(audio);
+    }
+    audio.loop = true;
+    try {
+      audio.currentTime = 0;
+      audio.play();
+      falhaAudioIsPlaying = true;
+    } catch (e) {}
+  }
+
+  function pararAudioFalha() {
+    let audio = document.getElementById('falha-audio');
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      falhaAudioIsPlaying = false;
+    }
+  }
+
+  function abrirInserirTrem() {
+    // Agora verifica todos os trens não ativos
+    const trensDisponiveis = trens.filter(t => !t.ativo);
+    if (!trensDisponiveis.length) return alert('Nenhum trem disponível para inserir!');
+    
+    document.getElementById('modalInserirTrem').style.display = 'block';
+    atualizarTremInserirSelect();
+  }
+
+  function fecharInserirTrem() {
+    document.getElementById('modalInserirTrem').style.display = 'none';
+  }
+
+  function atualizarTremRecolherSelect() {
+    const select = document.getElementById('tremRecolherSelect');
+    select.innerHTML = `<option value="">Selecione um trem</option>`;
+    select.innerHTML += `<option value="todos">Todos os trens</option>`;
+    trens.filter(t => t.ativo && !t.recolhido).forEach(trem => {
+      select.innerHTML += `<option value="${trem.id}">${trem.nome}</option>`;
+    });
+  }
+
+  function atualizarTremInserirSelect() {
+    const select = document.getElementById('tremInserirSelect');
+    select.innerHTML = `<option value="">Selecione um trem</option>`;
+    // Agora lista todos os trens não ativos
+    trens.filter(t => !t.ativo).forEach(t => {
+      const option = document.createElement('option');
+      option.value = t.id;
+      option.textContent = t.nome;
+      select.appendChild(option);
+    });
+  }
+
+  function inserirTremRecolhido(tremNumToInsert = null, estacaoToInsert = null) {
+    let tremNum = tremNumToInsert ? tremNumToInsert : Number(document.getElementById('tremInserirSelect').value);
+    let estacaoEscolhida = estacaoToInsert ? estacaoToInsert : document.getElementById('estacaoInserirSelect').value;
+
+    if (!tremNum) return alert('Selecione o trem para inserir');
+    if (!estacaoEscolhida) return alert('Selecione a estação de inserção');
+
+    const trem = trens.find(t => t.id === tremNum);
+    if (!trem || trem.ativo) return;
+
+    trem.ativo = true;
+    trem.recolhido = false;
+    trem.falha = null;
+    trem.estacaoRecolhimento = null;
+
+    let newLoopStep = 0;
+    let newIdx = 0;
+
+    switch (estacaoEscolhida) {
+      case "capao-v1": newLoopStep = 1; newIdx = estacoes_v1.indexOf("est1"); break;
+      case "capao-v2": newLoopStep = 0; newIdx = estacoes_v2.indexOf("est1-v2"); break;
+      case "giovanni-v1": newLoopStep = 1; newIdx = estacoes_v1.indexOf("est4"); break;
+      case "santo-v2": newLoopStep = 0; newIdx = estacoes_v2.indexOf("est5-v2"); break;
+      case "klabin-v1": newLoopStep = 1; newIdx = estacoes_v1.indexOf("est17"); break;
+      case "klabin-v2": newLoopStep = 0; newIdx = estacoes_v2.indexOf("est17-v2"); break;
+      default: alert("Estação inválida"); return;
+    }
+
+    trensData.push({
+      id: trem.id,
+      loopStep: newLoopStep,
+      idx: newIdx,
+      delay: 0,
+      aguardando: false,
+      tempoParado: 0,
+      tempoParadoEstacao: 0,
+      aguardandoProximoTrem: false
+    });
+
+    recolhidos = recolhidos.filter(n => n !== tremNum);
+    if (!tremNumToInsert) { // Fecha o modal apenas se a inserção não for automática
+        fecharInserirTrem();
+    }
+    registrarHistorico(`${trem.nome} inserido em ${estacaoEscolhida}`);
+    atualizarLinha();
+    atualizarTremRecolherSelect();
+    atualizarTremInserirSelect();
+    atualizarPOTECounter();
+  }
+
+  function formatarEstacao(est) {
+    switch (est.replace('-v2', '')) {
+case 'est1': return 'TM3';
+      case 'est1a': return 'Capão Redondo';
+      case 'est2': return 'Campo Limpo';
+      case 'est3': return 'Vila das Belezas';
+      case 'est4': return 'Giovanni Gronchi';
+      case 'est5': return 'Santo Amaro';
+      case 'est6': return 'Largo Treze';
+      case 'est7': return 'Adolfo Pinheiro';
+      case 'est8': return 'Alto da Boa Vista';
+      case 'est9': return 'Borba Gato';
+      case 'est10': return 'Brooklin';
+      case 'est11': return 'Campo Belo';
+      case 'est12': return 'Eucaliptos';
+      case 'est13': return 'Moema';
+      case 'est14': return 'AACD Servidor';
+      case 'est15': return 'Hospital São Paulo';
+      case 'est16': return 'Santa Cruz';
+      case 'est17a': return 'Chácara Klabin';
+case 'est17': return 'CBT';
+      default: return est;
+    }
+  }
+
+  function inserirParadoMsg(el, msg) {
+    if (!el.querySelector('.trem-parado-msg')) {
+      let div = document.createElement('div');
+      div.className = 'trem-parado-msg';
+      div.textContent = msg;
+      el.appendChild(div);
+    }
+  }
+
+  function registrarHistorico(evento, detalhes = '') {
+    historico.unshift({
+      tempo: tempoTotal,
+      evento,
+      detalhes
+    });
+    atualizarHistorico();
+  }
+
+  function atualizarHistorico() {
+    const tbody = document.getElementById('historico-tbody');
+    tbody.innerHTML = '';
+    historico.forEach((e, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${historico.length - i}</td><td>${e.tempo}s</td><td>${e.evento}</td><td>${e.detalhes||''}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function baixarCSV() {
+    if (!historico.length) return alert('Sem histórico para exportar!');
+    let csv = 'ID,Momento (s),Evento,Detalhes\n';
+    historico.slice().reverse().forEach((e, i) => {
+      csv += `${i+1},${e.tempo},"${e.evento}","${e.detalhes||''}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'historico_linha5.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function mostrarFalhaInfo() {
+    document.getElementById('falha-info').textContent = falhaMensagem;
+    document.getElementById('falha-info').style.color = '#f44336';
+  }
+
+  function solucionarFalha() {
+    // Nova lógica para o modo de Ajuste de Linha (NOVA)
+    if (modoAjustarLinha && !falhaX && !trens.some(t => t.falha) && !falhaEstacao) {
+        const estacoesLotadas = Object.keys(passageiros).filter(est => passageiros[est] > LOTACAO_MAXIMA);
+        const trensDisponiveis = trens.filter(t => !t.ativo).length;
+        let mensagemEstrategia = '';
+        if (estacoesLotadas.length > 0) {
+            mensagemEstrategia = `Estratégia: Foram detectadas ${estacoesLotadas.length} estações superlotadas.\n\n`;
+            if (trensDisponiveis > 0) {
+                mensagemEstrategia += `Recomenda-se a inserção de mais trens. Atualmente há ${trensDisponiveis} trem(s) disponível(is) para inserção. O ajuste automático já está inserindo trens em Capão Redondo, Chácara Klabin, TF13 ou TF14 para aliviar a demanda.`;
+            } else {
+                mensagemEstrategia += `Não há trens recolhidos disponíveis para inserção. O sistema irá acelerar os trens nos terminais para ajudar a aliviar a linha.`;
+            }
+        } else {
+            mensagemEstrategia = "A linha está operando de forma normal e sem falhas. Nenhuma ação de ajuste é necessária no momento.";
+        }
+
+        alert(mensagemEstrategia);
+        registrarHistorico("Análise de Estratégia", mensagemEstrategia);
+        return;
+    }
+    
+    // Lógica para falhas existentes (mantida)
+    if (falhaX) {
+      alert(`Solução para a falha em ${falhaXNome}:\n\nInformar ao CCO o aspecto do sinaleiro, caso autorizado seguir em manual checando rota.`);
+      registrarHistorico(
+        `Solução aplicada para ${falhaXNome}`,
+        "Informar ao CCO o aspecto do sinaleiro, caso autorizado seguir em manual checando rota."
+      );
+      falhaX = null;
+      falhaXNome = '';
+      pararAudioFalha();
+      falhaMensagem = '';
+      mostrarFalhaInfo();
+      atualizarLinha();
+      return;
+    }
+    const tremComFalha = trens.find(t => t.falha !== null);
+    if (tremComFalha) {
+      const falhaTipo = tremComFalha.falha;
+      let solucao = solucoesFalha[falhaTipo] || opcoesSolucao[Math.floor(Math.random() * opcoesSolucao.length)];
+      alert(`Solução para a falha de trem "${falhaTipo}" no ${tremComFalha.nome}:\n\n${solucao}`);
+      registrarHistorico(`Solução aplicada para o ${tremComFalha.nome}: ${falhaTipo}`, solucao);
+      tremComFalha.falha = null;
+    } else if (falhaEstacao) {
+      const falhaEstacaoTipoEncontrada = falhaEstacaoTipo;
+      const estacaoNome = formatarEstacao(falhaEstacao);
+      let solucao = solucoesFalha[falhaEstacaoTipoEncontrada] || opcoesSolucao[Math.floor(Math.random() * opcoesSolucao.length)];
+      alert(`Solução para a falha de estação "${falhaEstacaoTipoEncontrada}" em ${estacaoNome}:\n\n${solucao}`);
+      registrarHistorico(`Solução aplicada para a estação ${estacaoNome}: ${falhaEstacaoTipoEncontrada}`, solucao);
+      falhaEstacao = null;
+      falhaEstacaoTipo = null;
+    } else {
+      alert('Nenhuma falha para solucionar.');
+      return;
+    }
+
+    pararAudioFalha();
+    falhaMensagem = '';
+    mostrarFalhaInfo();
+    atualizarLinha();
+  }
+
+  function atualizarPOTECounter() {
+    const trensOperando = trens.filter(t => t.ativo && !t.recolhido).length;
+    document.getElementById('pote-value').textContent = trensOperando;
+  }
+  
+  // Event Listeners para atualizar os selects de falha
+  document.getElementById('falhaTipoSelect').addEventListener('change', function() {
+      const tipo = this.value;
+      const falhaSelect = document.getElementById('falhaSelect');
+      const falhaTremTipo = document.getElementById('falhaTremTipo');
+      const falhaEstacaoTipo = document.getElementById('falhaEstacaoTipo');
+      const falhaXTipo = document.getElementById('falhaXTipo');
+
+      // Resetar os selects de tipo e esconder
+      falhaSelect.innerHTML = '<option value="">Tipo de falha</option>';
+      falhaTremTipo.style.display = 'none';
+      falhaEstacaoTipo.style.display = 'none';
+      falhaXTipo.style.display = 'none';
+      
+      if (tipo === 'trem') {
+          falhaTremTipo.style.display = 'block';
+          falhaTremTipo.innerHTML = '<option value="">Tipo de falha no trem</option>' + falhasTremTextos.map(f => `<option value="${f}">${f}</option>`).join('');
+          falhaSelect.innerHTML = '<option value="">Selecione o trem</option>';
+          trens.filter(t => t.ativo && !t.recolhido).forEach(trem => {
+              const option = document.createElement('option');
+              option.value = `trem${trem.id}`;
+              option.textContent = trem.nome;
+              falhaSelect.appendChild(option);
+          });
+      } else if (tipo === 'estacao') {
+    falhaEstacaoTipo.style.display = 'block';
+    falhaEstacaoTipo.innerHTML = '<option value="">Tipo de falha na estação</option>' + 
+        falhasEstacaoTextos.map(f => `<option value="${f}">${f}</option>`).join('');
+
+    falhaSelect.innerHTML = '<option value="">Selecione a estação</option>';
+
+    // Adiciona opções para Via 1
+    estacoes_v1.forEach(est => {
+        const option = document.createElement('option');
+        option.value = est; // mantém o id exato (ex: est5)
+        option.textContent = formatarEstacao(est) + " (Via 1)";
+        falhaSelect.appendChild(option);
+    });
+
+    // Adiciona opções para Via 2
+    estacoes_v2.forEach(est => {
+        const option = document.createElement('option');
+        option.value = est; // mantém o id exato (ex: est5-v2)
+        option.textContent = formatarEstacao(est) + " (Via 2)";
+        falhaSelect.appendChild(option);
+    });
+} else if (tipo === 'x') {
+        falhaXTipo.style.display = 'block';
+        falhaXTipo.innerHTML = '<option value="">Selecione o X</option>';
+        Object.keys(falhasXmap).forEach(xName => {
+            const option = document.createElement('option');
+            option.value = xName;
+            option.textContent = xName;
+            falhaXTipo.appendChild(option);
+        });
+        falhaSelect.style.display = 'none'; // Esconde o falhaSelect
+    }
+  });
+
+
+  // Inicialização
+  window.onload = function() {
+    atualizarLinha();
+    atualizarTempo();
+    atualizarHistorico();
+    atualizarTremRecolherSelect();
+    atualizarTremInserirSelect();
+    mostrarFalhaInfo();
+    atualizarPOTECounter();
+
+    const btnSolucao = document.getElementById('btnSolucao');
+    if (btnSolucao) {
+      btnSolucao.onclick = solucionarFalha;
+    }
+  };
+
+  window.onclick = function(e) {
+    if (e.target && e.target.id === 'modalInserirTrem') {
+      fecharInserirTrem();
+    }
+  }
+  </script>
+  
+  <footer style="position: fixed; right: 0; bottom: 0; padding: 10px; background: transparent; font-family: sans-serif;">
+    <span style="font-size: 14px; color: #444;">Gadelha Operador L5</span>
+  </footer>
+</body>
+</html>
